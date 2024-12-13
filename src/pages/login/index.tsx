@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logoImg from '../../assets/logo.svg';
 import { Container } from '../../components/container';
-import { Input } from '../../components/input/intex';
+import { Input } from '../../components/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
