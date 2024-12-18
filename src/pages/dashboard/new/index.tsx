@@ -1,11 +1,11 @@
 import { Container } from "../../../components/container";
 import { DashboardHeader } from "../../../components/panelheader";
-import { FiUpload } from 'react-icons/fi';
+import { FiTrash, FiUpload } from 'react-icons/fi';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Input } from '../../../components/input'
-import { ChangeEvent, useContext } from "react";
+import { ChangeEvent, useContext, useState } from "react";
 import { AuthContext } from '../../../contexts/AuthContext'
 import { v4 as uuidV4 } from 'uuid'
 import { storage } from '../../../services/firebaseConnection'
@@ -31,6 +31,13 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
+interface ImageItemProps {
+   uid: string;
+   name: string;
+   previewUrl: string;
+   url: string;
+}
+
 export function New() {
   const { user } = useContext(AuthContext);
   const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
@@ -38,6 +45,8 @@ export function New() {
     mode: "onChange"
 
   })
+  
+  const [carImages, setCarImages] = useState<ImageItemProps[]>([])
 
   async function handleFile(e: ChangeEvent<HTMLInputElement>){
     if (e.target.files && e.target.files[0]) {
@@ -65,13 +74,34 @@ export function New() {
     uploadBytes(uploadRef, image)
     .then((snapshot) => {
       getDownloadURL(snapshot.ref).then((downloadUrl) => {
-        console.log(downloadUrl)
+        const imageItem = {
+          name: uidImage,
+          uid: currentUid,
+          previewUrl: URL.createObjectURL(image),
+          url: downloadUrl
+        }
+
+        setCarImages((images) => [...images, imageItem])
       })
     })
   }
 
   function onSubmit(data: FormData) {
     console.log(data)
+  }
+
+  async function handleDeleteImage(item: ImageItemProps) {
+    const imagePath = `images/${item.uid}/${item.name}`;
+
+    const imageRef = ref(storage, imagePath);
+
+    try{
+      await deleteObject(imageRef)
+      setCarImages(carImages.filter((car) => car.url !== item.url))
+    }
+    catch(err){
+      console.log("ERRO AO DELETAR")
+    }
   }
 
   return (
@@ -91,6 +121,20 @@ export function New() {
             />
           </div>
         </button>
+
+        {carImages.map(item => (
+          <div key={item.name} className="w-full h-32 flex items-center justify-center relative">
+            <button className="absolute z-10" onClick={() => handleDeleteImage(item)} >
+              <FiTrash size={28} color="#FFF" />
+            </button>
+            <img 
+              src={item.previewUrl} 
+              className="rounded-lg w-full h-32 object-cover"
+              alt="Foto do carro"
+             />
+          </div>
+        ))}
+
       </div>
 
       <div className="w-full bg-white p-3 rounded-lg flex flex-col sm:flex-row items-center gap-2 mt-2">
