@@ -110,7 +110,7 @@ export function New() {
       km: data.km,
       price: data.price,
       description: data.description,
-      creted: new Date(),
+      created: new Date(),
       owner: user?.name,
       uid: user?.uid,
       images: carListImages 
@@ -128,7 +128,6 @@ export function New() {
 
   async function handleDeleteImage(item: ImageItemProps) {
     const imagePath = `images/${item.uid}/${item.name}`;
-
     const imageRef = ref(storage, imagePath);
 
     try{
