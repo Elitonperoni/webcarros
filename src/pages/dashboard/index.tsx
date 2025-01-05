@@ -2,9 +2,11 @@ import { useEffect, useState, useContext } from "react";
 import { Container } from "../../components/container";
 import { DashboardHeader } from '../../components/panelheader'
 import { FiTrash2 } from 'react-icons/fi';
-import { collection, getDocs, where, query } from 'firebase/firestore';
-import { db } from "../../services/firebaseConnection";
+import { collection, getDocs, where, query, deleteDoc, doc } from 'firebase/firestore';
+import { db, storage } from "../../services/firebaseConnection";
+import { ref, deleteObject } from 'firebase/storage';
 import { AuthContext } from '../../contexts/AuthContext';
+import toast from "react-hot-toast";
 
 interface CarProps {
   id: string;
@@ -58,16 +60,36 @@ export function Dashboard() {
     loadCars()
   }, [user])
 
+  async function handleDeleteCar(car: CarProps) {
+      let itemCar = car;
+
+      const docRef = doc(db, "cars", car.id);
+      await deleteDoc(docRef);
+
+      car.images.map(async(image) => {
+        const imagePath = `images/${image.uid}/${image.name}`;
+        const imageRef = ref(storage, imagePath);
+
+        try{
+          await deleteObject(imageRef);
+          setCars(cars.filter(car => car.id !== itemCar.id));    
+          toast.success("Registro com sucesso!")      
+        }
+        catch(error){
+          console.log(error)
+          toast.error("Erro ao excluir registro") 
+        }        
+      })      
+    }
+
   return (
     <Container >
       <DashboardHeader />
-
       <main className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-
         {cars.map(car => (
           <section key={car.id} className="w-full bg-white rounded-lg relative">
             <button
-              onClick={() => { }}
+              onClick={() => { handleDeleteCar(car) }}
               className="absolute bg-white w-14 h-14 rounded-full flex items-center justify-center right-2 top-2 drop-shadow z-10"
             >
               <FiTrash2 size={26} color="#000" />

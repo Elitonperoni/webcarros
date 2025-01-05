@@ -5,7 +5,8 @@ import {
   collection,
   query,
   getDocs,
-  orderBy
+  orderBy,
+  where
 } from 'firebase/firestore';
 import { db } from '../../services/firebaseConnection'
 
@@ -29,36 +30,70 @@ interface CarImageProps {
 export function Home() {
   const [cars, setCars] = useState<CarProps[]>([]);
   const [loadImages, setLoadImages] = useState<string[]>([]);
+  const [input, setInput] = useState<string>("");
 
-  useEffect(() => {
-    function loadCars(){
-      const carRef = collection(db, "cars")
-      const queryRef = query(carRef, orderBy("created", "desc"))
-      
-      getDocs(queryRef)
-      .then((snapshot) => {
-        let listcars = [] as CarProps[];
-
-        snapshot.forEach(doc => {
-          listcars.push({
-            id: doc.id,
-            name: doc.data().name,
-            year: doc.data().year,
-            km: doc.data().km,
-            city: doc.data().city,
-            price: doc.data().price,
-            images: doc.data().images,
-            uid: doc.data().uid
-          })
-        })
-       setCars(listcars)
-      })
-    }
+  useEffect(() => {   
     loadCars()
   }, [])
 
+  function loadCars(){
+    const carRef = collection(db, "cars")
+    const queryRef = query(carRef, orderBy("created", "desc"))
+    
+    getDocs(queryRef)
+    .then((snapshot) => {
+      let listcars = [] as CarProps[];
+
+      snapshot.forEach(doc => {
+        listcars.push({
+          id: doc.id,
+          name: doc.data().name,
+          year: doc.data().year,
+          km: doc.data().km,
+          city: doc.data().city,
+          price: doc.data().price,
+          images: doc.data().images,
+          uid: doc.data().uid
+        })
+      })
+     setCars(listcars)
+    })
+  }
+
   function handleImageLoad(id: string){
     setLoadImages((prevImageLoaded) => [...prevImageLoaded, id])
+  }
+
+  async function handleSearchCar(){
+    if (input === "") {
+      loadCars()
+      return;
+    }
+    setCars([])  
+    setLoadImages([])  
+
+    const q = query(collection(db, "cars"), 
+    where("name", ">=", input.trim().toUpperCase()),
+    where("name", "<=", input.trim().toUpperCase() + "\uf8ff"))
+
+    const querySnapshot = await getDocs(q);
+
+    let listCars = [] as CarProps[];
+
+    querySnapshot.forEach((doc) => {
+      listCars.push({
+        id: doc.id,
+        name: doc.data().name,
+        year: doc.data().year,
+        km: doc.data().km,
+        city: doc.data().city,
+        price: doc.data().price,
+        images: doc.data().images,
+        uid: doc.data().uid
+      })
+    })
+
+    setCars(listCars)
   }
 
   return (
@@ -67,9 +102,12 @@ export function Home() {
         <input
           className="2-full border-2 rounded-lg h-9 px-3 outline-none"
           placeholder="Digite o nome do carro..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
         />
         <button
           className="bg-red-500 h-9 px-8 rounded-lg text-white font-medium text-lg"
+          onClick={handleSearchCar}
         >
           Buscar
         </button>
