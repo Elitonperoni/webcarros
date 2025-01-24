@@ -22,12 +22,12 @@ jobs:
         password: ${{ secrets.GH_PACKAGES_TOKEN }}
         
     - run: |
-   #     docker build -t ghcr.io/elitonperoni/webcarros/webcarros:latest -f Dockerfile .
-   #     docker tag ghcr.io/elitonperoni/webcarros/webcarros:latest ghcr.io/elitonperoni/webcarros/webcarros:${GITHUB_SHA}
+        docker build -t ghcr.io/elitonperoni/webcarros/webcarros:latest -f Dockerfile .
+        docker tag ghcr.io/elitonperoni/webcarros/webcarros:latest ghcr.io/elitonperoni/webcarros/webcarros:${GITHUB_SHA}
         
     - run: |
-    #    docker push ghcr.io/elitonperoni/webcarros/webcarros:latest 
-    #    docker push ghcr.io/elitonperoni/webcarros/webcarros:${GITHUB_SHA} 
+        docker push ghcr.io/elitonperoni/webcarros/webcarros:latest 
+        docker push ghcr.io/elitonperoni/webcarros/webcarros:${GITHUB_SHA} 
 
 # 5. Conectar-se ao servidor via SSH e fazer as operações no servidor
     - name: Deploy to server
