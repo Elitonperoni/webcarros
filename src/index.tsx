@@ -29,13 +29,3 @@ root.render(
     </AuthProvider>
   </React.StrictMode>
 );
-
-export async function getServerSideProps() {
-  console.log('CHAVEE' + process.env.NEXT_PUBLIC_API_URL)
-
-  return {
-    props: {
-      hello: 'wolrd'
-    }
-  }
-}
